@@ -29,28 +29,19 @@ public class ProductService {
                 .build();
     }
 
-    // Convert ProductRequest to Product
-    private Product toProduct(ProductRequest productRequest) {
-        return new Product.Builder()
-                .name(productRequest.getName())
-                .description(productRequest.getDescription())
-                .price(productRequest.getPrice())
-                .quantity(productRequest.getQuantity())
-                .build();
+       //     Convert ProductRequest to Product\
+
+    public Flux<Product> getAllProducts() {
+        return productRepository.findAll();
     }
 
-    public Flux<ProductResponse> getAllProducts() {
-        return productRepository.findAll()
-                .map(this::toProductResponse);
-    }
+    public Mono<Product> getProductById(Integer productId) {
+        return productRepository.findByProductId(productId);
 
-    public Mono<ProductResponse> getProductById(Integer productId) {
-        return productRepository.findByProductId(productId)
-                .map(this::toProductResponse);
     }
 
     public Flux<ProductResponse> searchProductsByName(String name) {
-        return productRepository.findByNameContainingIgnoreCase(name)
+        return productRepository.findByNameEqualsIgnoreCase(name)
                 .map(this::toProductResponse);
     }
 
@@ -60,10 +51,10 @@ public class ProductService {
                 .map(this::toProductResponse);
     }
 
-    public Mono<ProductResponse> addProduct(ProductRequest productRequest) {
-        Product product = toProduct(productRequest);
+      public Mono<ProductResponse> addProduct(Product product) {
         return productRepository.save(product)
-                .map(this::toProductResponse);
+            .map(this::toProductResponse);
+
     }
 
     public Mono<ProductResponse> updateProduct(Integer productId, ProductRequest productRequest) {
