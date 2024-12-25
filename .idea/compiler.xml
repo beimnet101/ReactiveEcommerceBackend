@@ -16,8 +16,8 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
-        <module name="API-GATEWAY" />
         <module name="cart-service" />
+        <module name="API-GATEWAY" />
         <module name="payment-service" />
         <module name="product-service" />
         <module name="order-service" />

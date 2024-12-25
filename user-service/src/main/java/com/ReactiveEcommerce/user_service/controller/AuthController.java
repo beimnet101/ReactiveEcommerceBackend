@@ -1,11 +1,12 @@
 package com.ReactiveEcommerce.user_service.controller;
 
-
 import com.ReactiveEcommerce.user_service.dto.LoginRequestDTO;
 import com.ReactiveEcommerce.user_service.dto.LoginResponseDTO;
+import com.ReactiveEcommerce.user_service.exception.UserAlreadyExistException;
 import com.ReactiveEcommerce.user_service.model.User;
 import com.ReactiveEcommerce.user_service.service.Impl.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,22 +24,22 @@ public class AuthController {
 
     // Endpoint to register a user
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<User> registerUser(@RequestBody User user) {
-        return userService.registerUser(user);
+    public Mono<ResponseEntity<Object>> registerUser(@RequestBody User user) {
+        return userService.registerUser(user)
+                .map(savedUser -> ResponseEntity.status(HttpStatus.CREATED).body(savedUser))
+                .onErrorResume(UserAlreadyExistException.class, ex ->
+                        Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists with the username"))
+                );
     }
 
     // Login method
     @PostMapping("/login")
-    public Mono<LoginResponseDTO> loginUser(LoginRequestDTO loginRequestDTO) {
+    public LoginResponseDTO loginUser(@RequestBody LoginRequestDTO loginRequestDTO) {
         return userService.loginUser(loginRequestDTO);
     }
-
-
-
     // Endpoint to get a user by ID
     @GetMapping("/{id}")
-    public Mono<User> getUserById(@PathVariable Long id) {
+    public Mono<User> getUserById(@PathVariable String id) {
         return userService.findById(id);
     }
 

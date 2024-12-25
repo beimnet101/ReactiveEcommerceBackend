@@ -1,12 +1,12 @@
 package com.ReactiveEcommerce.user_service.model;
 
-import lombok.AllArgsConstructor;import lombok.Builder;
-import lombok.NoArgsConstructor;import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "products")
 public class Product {    @Id
 private Integer productId;    private String name;
     private String description;    private Double price;
