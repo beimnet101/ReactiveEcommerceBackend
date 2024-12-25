@@ -2,20 +2,23 @@ package com.ReactiveEcommerce.product_service.controller;
 
 import com.ReactiveEcommerce.product_service.dto.ProductRequest;
 import com.ReactiveEcommerce.product_service.dto.ProductResponse;
+import com.ReactiveEcommerce.product_service.model.Product;
 import com.ReactiveEcommerce.product_service.service.Impl.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
     private final ProductService productService;
 
     public ProductController(ProductService productService) {
@@ -24,63 +27,89 @@ public class ProductController {
 
     // Get all products
     @GetMapping("/products/all")
-    public Mono<ResponseEntity<Flux<ProductResponse>>> getAllProducts() {
-        Flux<ProductResponse> products = productService.getAllProducts();
-        return products.hasElements()
-                .flatMap(hasElements -> hasElements
-                        ? Mono.just(ResponseEntity.ok().body(products))
-                        : Mono.just(ResponseEntity.notFound().build()));
+    public Flux<Product> getAllProducts() {
+             return  productService.getAllProducts();
     }
 
     // Get product by ID
     @GetMapping("/{productId}")
-    public Mono<ResponseEntity<ProductResponse>> getProductById(@PathVariable Integer productId) {
-        return productService.getProductById(productId)
-                .map(product -> ResponseEntity.ok(product))  // Found the product
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build())); // Not found
+    public Mono<Product> getProductById(@PathVariable Integer productId) {
+        return productService.getProductById(productId);
     }
 
     // Search products by name
+
     @GetMapping("/search")
-    public Mono<ResponseEntity<Flux<ProductResponse>>> searchProductsByName(@RequestParam String name) {
+    public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestBody ProductRequest productRequest) {
+        logger.info("Received request with name: {}", productRequest.getName());
+
+        String name = productRequest.getName(); // Extract the 'name' field from the JSON body
         Flux<ProductResponse> products = productService.searchProductsByName(name);
-        return products.hasElements()
-                .flatMap(hasElements -> hasElements
-                        ? Mono.just(ResponseEntity.ok().body(products))
-                        : Mono.just(ResponseEntity.notFound().build()));
-    }
 
-    // Get products by price range
-    @GetMapping("/price-range")
-    public Mono<ResponseEntity<Flux<ProductResponse>>> getProductsByPriceRange(
-            @RequestParam Double minPrice,
-            @RequestParam Double maxPrice) {
-        Flux<ProductResponse> products = productService.getProductsByPriceRange(minPrice, maxPrice);
-        return products.hasElements()
-                .flatMap(hasElements -> hasElements
-                        ? Mono.just(ResponseEntity.ok().body(products))
-                        : Mono.just(ResponseEntity.notFound().build()));
-    }
-
-    // Add new product
+        return products
+                .collectList()
+                .map(productList -> {
+                    if (productList.isEmpty()) {
+                        return ResponseEntity.notFound().build();
+                    } else {
+                        return ResponseEntity.ok(productList);
+                    }
+                });}
+        // Get products by price range
+        @GetMapping("/price-range")
+        public Mono<ResponseEntity<List<ProductResponse>>> getProductsByPriceRange(
+                @RequestParam Double minPrice,
+                @RequestParam Double maxPrice) {
+            Flux<ProductResponse> products = productService.getProductsByPriceRange(minPrice, maxPrice);
+            return products
+                    .collectList()
+                    .map(productList -> {
+                        if (productList.isEmpty()) {
+                            return ResponseEntity.notFound().build();
+                        } else {
+                            return ResponseEntity.ok(productList);
+                        }
+                    });
+        }
     @PostMapping("/addProduct")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ProductResponse> addProduct(@RequestBody ProductRequest productRequest) {
-        return productService.addProduct(productRequest);
+    public Mono<ResponseEntity<ProductResponse>> addProduct(@RequestBody ProductRequest productRequest) {
+        logger.info("Received product request: {}", productRequest);
+
+        Product product = new Product();
+        product.setName(productRequest.getName());
+        product.setDescription(productRequest.getDescription());
+        product.setPrice(productRequest.getPrice());
+        product.setQuantity(productRequest.getQuantity());
+
+        return productService.addProduct(product)
+                .map(savedProduct -> ResponseEntity.status(HttpStatus.CREATED).body(savedProduct))
+                .onErrorResume(e -> {
+                    logger.error("Error adding product", e);
+                    return Mono.just(ResponseEntity.badRequest().build());
+                });
     }
+
+
+
 
     // Update product by ID
-    @PutMapping("/{productId}")
-    public Mono<ProductResponse> updateProduct(
-            @PathVariable Integer productId,
-            @RequestBody ProductRequest productRequest) {
-        return productService.updateProduct(productId, productRequest);
+        @PutMapping("/{productId}")
+        public Mono<ResponseEntity<ProductResponse>> updateProduct(
+                @PathVariable Integer productId,
+                @RequestBody ProductRequest productRequest) {
+            return productService.updateProduct(productId, productRequest)
+                    .map(ResponseEntity::ok)
+                    .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        }
+
+        // Delete product by ID
+        @DeleteMapping("/{productId}")
+        public Mono<ResponseEntity<Object>> deleteProductById(@PathVariable Integer productId) {
+            return productService.deleteProductById(productId)
+                    .then(Mono.just(ResponseEntity.noContent().build()))
+                    .onErrorResume(e -> Mono.just(ResponseEntity.notFound().build()));
+        }
     }
 
-    // Delete product by ID
-    @DeleteMapping("/{productId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteProductById(@PathVariable Integer productId) {
-        return productService.deleteProductById(productId);
-    }
-}
+
+
