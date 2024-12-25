@@ -83,6 +83,18 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.playtika.reactivefeign/feign-reactor-spring-cloud-starter -->
+		<!-- https://mvnrepository.com/artifact/com.playtika.reactivefeign/feign-reactor-spring-cloud-starter -->
+		<dependency>
+			<groupId>com.playtika.reactivefeign</groupId>
+			<artifactId>feign-reactor-spring-cloud-starter</artifactId>
+			<version>4.2.1</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-loadbalancer</artifactId>
+		</dependency>
 
 		<!-- Lombok for Simplified Code -->
 		<dependency>

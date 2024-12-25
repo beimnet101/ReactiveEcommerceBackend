@@ -1,10 +1,13 @@
 package com.ReactiveEcommerce.user_service.service.Impl;
 
 
+//import com.ReactiveEcommerce.user_service.config.JwtUtil;
+//import com.ReactiveEcommerce.user_service.ProductClient;
 import com.ReactiveEcommerce.user_service.dto.LoginRequestDTO;
 import com.ReactiveEcommerce.user_service.dto.LoginResponseDTO;
 import com.ReactiveEcommerce.user_service.exception.CredentialException;
 import com.ReactiveEcommerce.user_service.exception.UserAlreadyExistException;
+import com.ReactiveEcommerce.user_service.model.Product;
 import com.ReactiveEcommerce.user_service.model.User;
 import com.ReactiveEcommerce.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +25,9 @@ public class UserServiceImpl implements UserService {
 
 //    private final ProductServiceClient productServiceClient;
     private final UserRepository userRepository;
+   // private final JwtUtil jwtUtil;
 
-
+//private  final ProductClient productClient;
 
     @Override
     public Mono<Object> registerUser(User user) {
@@ -46,11 +50,13 @@ public class UserServiceImpl implements UserService {
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequestDTO) {
         User user = userRepository.findByUsername(loginRequestDTO.getUsername()).block(); // Synchronous call
         if (user != null && loginRequestDTO.getPassword().equals(user.getPassword())) {
+           // String token = jwtUtil.generateToken(loginRequestDTO.getUsername());
             return new LoginResponseDTO(true, "Login success", null);  // Return success if credentials match
         } else {
             throw new CredentialException("Invalid credentials");  // Throw exception if credentials don't match
         }
     }
+
 
 
 
