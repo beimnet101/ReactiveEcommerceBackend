@@ -1,7 +1,6 @@
 package com.ReactiveEcommerce.user_service.service.Impl;
 
 
-import com.ReactiveEcommerce.user_service.config.JwtUtil;
 import com.ReactiveEcommerce.user_service.dto.LoginRequestDTO;
 import com.ReactiveEcommerce.user_service.dto.LoginResponseDTO;
 import com.ReactiveEcommerce.user_service.exception.CredentialException;
@@ -23,7 +22,6 @@ public class UserServiceImpl implements UserService {
 
 //    private final ProductServiceClient productServiceClient;
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
 
 
@@ -48,8 +46,7 @@ public class UserServiceImpl implements UserService {
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequestDTO) {
         User user = userRepository.findByUsername(loginRequestDTO.getUsername()).block(); // Synchronous call
         if (user != null && loginRequestDTO.getPassword().equals(user.getPassword())) {
-            String token = jwtUtil.generateToken(loginRequestDTO.getUsername());
-            return new LoginResponseDTO(true, "Login success", token);  // Return success if credentials match
+            return new LoginResponseDTO(true, "Login success", null);  // Return success if credentials match
         } else {
             throw new CredentialException("Invalid credentials");  // Throw exception if credentials don't match
         }
