@@ -38,7 +38,7 @@
       <module name="order-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
       <module name="product-service" options="-parameters" />
-      <module name="user-service" options="-parameters" />
+      <module name="user-service" options="" />
     </option>
   </component>
 </project>
