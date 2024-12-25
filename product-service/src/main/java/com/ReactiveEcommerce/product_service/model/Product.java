@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+
 @Table(name = "products")
 public class Product {
     @Id
@@ -18,8 +16,7 @@ public class Product {
     private Double price;
     private Integer quantity;
 
-    public Product(Builder builder) {
-    }
+
 
     public Integer getProductId() {
         return productId;
@@ -61,62 +58,58 @@ public class Product {
         this.quantity = quantity;
     }
 
-    // Static inner Builder class
-    public static class Builder {
+    public Product() {
+    }
+
+    public Product(Integer productId, String name, String description, Double price, Integer quantity) {
+        this.productId = productId;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public static class ProductBuilder {
         private Integer productId;
         private String name;
         private String description;
         private Double price;
         private Integer quantity;
 
-        public Builder productId(Integer productId) {
+        public ProductBuilder productId(Integer productId) {
             this.productId = productId;
             return this;
         }
 
-        public Builder name(String name) {
+        public ProductBuilder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder description(String description) {
+        public ProductBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public Builder price(Double price) {
+        public ProductBuilder price(Double price) {
             this.price = price;
             return this;
         }
 
-        public Builder quantity(Integer quantity) {
+        public ProductBuilder quantity(Integer quantity) {
             this.quantity = quantity;
             return this;
         }
 
         public Product build() {
-            return new Product(this);
+            return new Product(productId, name, description, price, quantity);
         }
+    }
+
+    public static ProductBuilder builder() {
+        return new ProductBuilder();
+    }
+}
 
 
-        // Getters for fields
-        public Integer getProductId() {
-            return productId;
-        }
 
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public Double getPrice() {
-            return price;
-        }
-
-        public Integer getQuantity() {
-            return quantity;
-        }
-    }}

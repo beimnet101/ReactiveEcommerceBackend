@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="ReactiveEcommerce@bamlakbemni-6450.j77.aws-eu-central-1.cockroachlabs.cloud" uuid="03d1befc-836c-4519-8497-d0aa2a53edc7">
-      <driver-ref>cockroach</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://bamlakbemni-6450.j77.aws-eu-central-1.cockroachlabs.cloud:26257/ReactiveEcommerce?sslmode=verify-full</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="spring_reactive@localhost" uuid="46a02ec0-617b-4808-b5bf-aeeabe5dd3f6">
+    <data-source source="LOCAL" name="postgres@localhost" uuid="36cb2e44-6ee0-42ce-ba17-85b7b9d55f8c">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/spring_reactive</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="@localhost" uuid="902a1386-a181-449e-88c1-1df278aa8497">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
