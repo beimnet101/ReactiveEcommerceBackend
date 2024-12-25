@@ -1,8 +1,7 @@
 package com.ReactiveEcommerce.user_service.exception.ExceptionHandlers;
-
 import com.ReactiveEcommerce.user_service.exception.CredentialException;
-import com.ReactiveEcommerce.user_service.exception.UserAlreadyExistException;
 import com.ReactiveEcommerce.user_service.exception.UserNotFoundException;
+import com.ReactiveEcommerce.user_service.exception.UserAlreadyExistException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

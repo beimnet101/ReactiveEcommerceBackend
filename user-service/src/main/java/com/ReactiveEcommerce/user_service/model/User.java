@@ -1,23 +1,22 @@
 package com.ReactiveEcommerce.user_service.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
+@Document(collection = "users")  // MongoDB equivalent of the @Table annotation
 public class User {
 
     @Id
-    private Long id;
+    private String id;  // MongoDB uses String for the ID by default
 
     private String username;
     private String password;
@@ -25,9 +24,7 @@ public class User {
     private Role role; // Enum field
 
     @CreatedDate
-    private LocalDateTime createdDate;
-
-
+    private LocalDateTime createdDate;  // Keep this if you want automatic date creation handling by MongoDB
 
     public enum Role {
         ADMIN,
