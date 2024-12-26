@@ -13,4 +13,10 @@ public class WebClientConfig {
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder();
     }
+
+    @Bean
+    public WebClient webClient(WebClient.Builder webClientBuilder) {
+        // Use the builder to create a WebClient instance with LoadBalanced
+        return webClientBuilder.build();
+    }
 }

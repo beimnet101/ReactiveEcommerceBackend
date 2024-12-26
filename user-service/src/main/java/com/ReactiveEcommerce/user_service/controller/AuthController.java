@@ -18,6 +18,7 @@ public class AuthController {
 
     private final UserService userService;
 
+
     public AuthController(UserService userService) {
         this.userService = userService;
     }
@@ -25,6 +26,7 @@ public class AuthController {
     // Endpoint to register a user
     @PostMapping("/register")
     public Mono<ResponseEntity<Object>> registerUser(@RequestBody User user) {
+
         return userService.registerUser(user)
                 .map(savedUser -> ResponseEntity.status(HttpStatus.CREATED).body(savedUser))
                 .onErrorResume(UserAlreadyExistException.class, ex ->

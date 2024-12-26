@@ -43,10 +43,9 @@ public class OrderController {
 
     // Search orders by user ID
     @GetMapping("/search")
-    public Mono<ResponseEntity<List<OrderResponse>>> searchOrdersByUserId(@RequestBody OrderRequest orderRequest) {
-        logger.info("Received request for userId: {}", orderRequest.getUserId());
+    public Mono<ResponseEntity<List<OrderResponse>>> searchOrdersByUserId(@RequestParam Integer userId) {
+        logger.info("Received request for userId: {}", userId);
 
-        Integer userId = orderRequest.getUserId();
         Flux<OrderResponse> orders = orderService.getOrdersByUserId(userId);
 
         return orders
@@ -59,6 +58,7 @@ public class OrderController {
                     }
                 });
     }
+
 
     // Get orders by date range
     @GetMapping("/date-range")

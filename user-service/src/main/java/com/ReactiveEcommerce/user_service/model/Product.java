@@ -7,7 +7,8 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Product {    @Id
+public class Product {
+    @Id
 private Integer productId;    private String name;
     private String description;    private Double price;
     private Integer quantity;
