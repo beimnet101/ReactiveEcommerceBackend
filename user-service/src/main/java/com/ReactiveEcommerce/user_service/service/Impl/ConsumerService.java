@@ -3,17 +3,24 @@ package com.ReactiveEcommerce.user_service.service.Impl;
 import com.ReactiveEcommerce.user_service.dto.*;
 import com.ReactiveEcommerce.user_service.model.Order;
 import com.ReactiveEcommerce.user_service.model.Product;
+import com.ReactiveEcommerce.user_service.security.JWTUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
 public class ConsumerService {
 
     private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    private JWTUtil jwtUtil;
 
     // Get all products
     public Flux<Product> getAllProducts() {
@@ -34,14 +41,21 @@ public class ConsumerService {
                 .bodyToMono(Product.class);
     }
 
-    // Search products by name
-    public Flux<ProductResponse> searchProductsByName(String name) {
+     //Search products by name
+     public Flux<ProductResponse> searchProductsByName(String name) {
         return webClientBuilder.build()
                 .get()
-                .uri("http://ProductService/products/search?name={name}", name) // Using query parameter
+                .uri(uriBuilder -> uriBuilder .path("http://ProductService/products/search")
+                .queryParam(name)
+                .build())
                 .retrieve()
                 .bodyToFlux(ProductResponse.class);
-    }
+     }
+
+
+
+
+
 
     // Get products by price range
     public Flux<ProductResponse> getProductsByPriceRange(Double minPrice, Double maxPrice) {
@@ -148,24 +162,36 @@ public class ConsumerService {
                 .bodyToMono(Void.class);
     }
     // Send order placement notification to NotificationService
-    public void sendOrderPlacementNotification(OrderRequest orderRequest) {
-        EmailRequest emailRequest=new EmailRequest();
-        emailRequest.setEmail(orderRequest.Email);
+    public void sendOrderPlacementNotification( String token) {
+        // Extract email from the JWT token
+        String email = jwtUtil.extractEmail(token);
+
+        // Create email request and set email
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setEmail(email);
+
+        // Send the email request to the NotificationService
         webClientBuilder.build()
                 .post()
-                .uri("http://NotificationService/notifications/send-order-notification")  // URL for NotificationService endpoint
-                .bodyValue(emailRequest)  // Send email in the body
+                .uri("http://NotificationService/notifications/send-order-notification") // URL for NotificationService endpoint
+                .bodyValue(emailRequest) // Send email in the body
                 .retrieve()
-                .bodyToMono(Void.class)  // No content expected in the response
-                .block();  // Block to make it synchronous
+                .bodyToMono(Void.class) // No content expected in the response
+                .block(); // Block to make it synchronous
     }
 
+
     // Send registration notification to NotificationService
-    public void sendRegistrationNotification(OrderRequest orderRequest) {
-        String email=orderRequest.getEmail();
+    public void sendLoginNotification(AuthRequest authRequest) {
+
+
+        // Create email request and set email
+        EmailRequest email = new EmailRequest();
+        email.setEmail(authRequest.getEmail());
+
         webClientBuilder.build()
                 .post()
-                .uri("http://NotificationService/notifications/send-registration-notification")  // URL for NotificationService endpoint
+                .uri("http://NotificationService/notifications/send-login-notification")  // URL for NotificationService endpoint
                 .bodyValue(email)  // Send email in the body
                 .retrieve()
                 .bodyToMono(Void.class)  // No content expected in the response
@@ -173,9 +199,12 @@ public class ConsumerService {
     }
 
     // Send sign-up confirmation notification to NotificationService
-    public void sendSignUpConfirmation(OrderRequest orderRequest) {
-        String email=orderRequest.getEmail();
-        webClientBuilder.build()
+    public void sendSignUpConfirmation(RegisterReq registerReq) {
+        EmailRequest email = new EmailRequest();
+        email.setEmail(registerReq.getEmail());
+
+
+         webClientBuilder.build()
                 .post()
                 .uri("http://NotificationService/notifications/send-signup-confirmation")  // URL for NotificationService endpoint
                 .bodyValue(email)  // Send email in the body

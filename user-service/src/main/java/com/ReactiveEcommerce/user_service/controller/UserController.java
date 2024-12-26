@@ -7,9 +7,11 @@ import com.ReactiveEcommerce.user_service.dto.ProductResponse;
 import com.ReactiveEcommerce.user_service.model.Order;
 import com.ReactiveEcommerce.user_service.model.Product;
 import com.ReactiveEcommerce.user_service.service.Impl.ConsumerService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,7 +38,7 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     return consumerService.getProductById(productId);
 }
 
-    // Search products by name
+     //Search products by name
     @GetMapping("product/search")
     public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestParam String name) {
         return consumerService.searchProductsByName(name)
@@ -45,6 +47,7 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
                         ResponseEntity.notFound().build() :
                         ResponseEntity.ok(productList));
     }
+
 
     // Get products by price range
     @GetMapping("product/price-range")
@@ -59,6 +62,8 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     }
 
     // Add product
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("product/addProduct")
     public Mono<ResponseEntity<ProductResponse>> addProduct(@RequestBody ProductRequest productRequest) {
         return consumerService.addProduct(productRequest)
@@ -77,6 +82,8 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     }
 
     // Delete product by ID
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("product/{productId}")
     public Mono<Void> deleteProductById(@PathVariable Integer productId) {
         return consumerService.deleteProductById(productId)
@@ -85,34 +92,41 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     }
 
         // ------------------- Order Endpoints -------------------
-
+        @SecurityRequirement(name = "bearerAuth")
+        @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/orders")
         public Flux<Order> getAllOrders() {
             return consumerService.getAllOrders();
         }
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/orders/{orderId}")
         public Mono<Order> getOrderById(@PathVariable Integer orderId) {
             return consumerService.getOrderById(orderId);
         }
 
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/orders/date-range")
         public Flux<OrderResponse> getOrdersByDateRange(
                 @RequestParam String startDate,
                 @RequestParam String endDate) {
             return consumerService.getOrdersByDateRange(startDate, endDate);
         }
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('USER')")
         @PostMapping("/orders/createOrder")
-        public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest) {
+        public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest,@RequestHeader("Authorization") String token) {
+             String actualToken = token;
 
-                   consumerService.sendOrderPlacementNotification(orderRequest);
+
+                   consumerService.sendOrderPlacementNotification(actualToken);
             return consumerService.addOrder(orderRequest);
 
 
         }
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/search")
     public Mono<ResponseEntity<Flux<OrderResponse>>> searchOrdersByUserId(@RequestParam Integer userId) {
         Flux<OrderResponse> orders = consumerService.searchOrdersByUserId(userId);
@@ -128,14 +142,16 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     }
 
 
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
         @PutMapping("/orders/{orderId}")
         public Mono<OrderResponse> updateOrder(
                 @PathVariable Integer orderId,
                 @RequestBody OrderRequest orderRequest) {
             return consumerService.updateOrder(orderId, orderRequest);
         }
-
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/orders/{orderId}")
         public Mono<Void> deleteOrder(@PathVariable Integer orderId) {
             return consumerService.deleteOrderById(orderId);

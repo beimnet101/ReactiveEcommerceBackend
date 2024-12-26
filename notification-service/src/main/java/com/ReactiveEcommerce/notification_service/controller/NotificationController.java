@@ -36,11 +36,11 @@ public class NotificationController {
         return "Order placement email sent!";
     }
 
-    @PostMapping("/send-registration-notification")
+    @PostMapping("/send-login-notification")
     public String sendRegistrationNotification(@RequestBody EmailRequest email) {
         String Email=email.getEmail();
-        notificationService.sendUserRegistrationNotification(Email);
-        return "Registration email sent!";
+        notificationService.sendUserLoginNotification(Email);
+        return "a device has email logged sent!";
     }
 
     @PostMapping("/send-signup-confirmation")

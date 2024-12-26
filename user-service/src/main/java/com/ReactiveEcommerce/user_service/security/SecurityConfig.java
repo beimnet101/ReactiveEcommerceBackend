@@ -32,6 +32,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
+                                "/user/products",
+                                "/user/product/{productId}",
                                 "/swagger-resources/**").permitAll()
                         .anyExchange().authenticated())
                 .authenticationManager(authenticationManager)

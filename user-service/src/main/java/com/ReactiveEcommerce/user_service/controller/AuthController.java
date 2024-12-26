@@ -5,12 +5,10 @@ import com.ReactiveEcommerce.user_service.dto.AuthResponse;
 import com.ReactiveEcommerce.user_service.dto.RegisterReq;
 import com.ReactiveEcommerce.user_service.model.User;
 import com.ReactiveEcommerce.user_service.security.JWTUtil;
+
 import com.ReactiveEcommerce.user_service.service.Impl.TestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import org.apache.http.protocol.HttpCoreContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.ReactiveEcommerce.user_service.service.Impl.ConsumerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,10 +26,14 @@ public class AuthController {
     private final JWTUtil jwtUtil;
 
     private final TestService userService;
+ private  final ConsumerService consumerService;
 
-    public AuthController(JWTUtil jwtUtil, TestService userService) {
+    public AuthController(JWTUtil jwtUtil, TestService userService, ConsumerService consumerService) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+
+
+        this.consumerService = consumerService;
     }
 
     @PostMapping("/login")
@@ -39,17 +41,29 @@ public class AuthController {
         return userService.findByUsername(authRequest.getUsername())
                 .<ResponseEntity<AuthResponse>>handle((userDetails, sink) -> {
                     if (userDetails.getPassword().equals(authRequest.getPassword())) {
-                        sink.next(ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(authRequest.getUsername()))));
+                        sink.next(ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(authRequest.getUsername(), authRequest.getEmail()))));
+                        consumerService.sendLoginNotification(authRequest);
                     } else {
                         sink.error(new BadCredentialsException("Invalid username or password"));
                     }
                 }).switchIfEmpty(Mono.error(new BadCredentialsException("Invalid username or password")));
-    }
-    @PostMapping("/signup")
-    public Mono<ResponseEntity<String>> signup(@RequestBody RegisterReq registerReq) {
-        return userService.save(registerReq)
-                .map(savedUser -> ResponseEntity.ok("User signed up successfully"));
-    }
+ }
+//    @PostMapping("/signup")
+//    public Mono<ResponseEntity<String>> signup(@RequestBody RegisterReq registerReq) {
+//             consumerService.sendSignUpConfirmation(registerReq);
+//
+//        return userService.save(registerReq)
+//                .map(savedUser -> ResponseEntity.ok("User signed up successfully"));
+//
+//  }
+   @PostMapping("/signup")
+   public Mono<ResponseEntity<String>> signup(@RequestBody RegisterReq registerReq) {
+    return userService.save(registerReq)
+            .doOnSuccess(savedUser -> consumerService.sendSignUpConfirmation(registerReq))
+            .map(savedUser -> ResponseEntity.ok("User signed up successfully"));
+}
+
+
 
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/protected")

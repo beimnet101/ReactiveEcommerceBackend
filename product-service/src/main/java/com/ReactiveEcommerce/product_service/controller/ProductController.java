@@ -39,23 +39,35 @@ public class ProductController {
 
     // Search products by name
 
+//    @GetMapping("/search")
+//    public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestParam ProductRequest productRequest) {
+//        logger.info("Received request with name: {}", productRequest.getName());
+//
+//        String name = productRequest.getName(); // Extract the 'name' field from the JSON body
+//        Flux<ProductResponse> products = productService.searchProductsByName(name);
+//
+//        return products
+//                .collectList()
+//                .map(productList -> {
+//                    if (productList.isEmpty()) {
+//                        return ResponseEntity.notFound().build();
+//                    } else {
+//                        return ResponseEntity.ok(productList);
+//                    }
+//                });}
+
     @GetMapping("/search")
-    public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestBody ProductRequest productRequest) {
-        logger.info("Received request with name: {}", productRequest.getName());
-
-        String name = productRequest.getName(); // Extract the 'name' field from the JSON body
+    public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestParam String name) {
+        logger.info("Received request with name: {}", name);
         Flux<ProductResponse> products = productService.searchProductsByName(name);
-
-        return products
-                .collectList()
-                .map(productList -> {
-                    if (productList.isEmpty()) {
-                        return ResponseEntity.notFound().build();
-                    } else {
-                        return ResponseEntity.ok(productList);
-                    }
-                });}
-        // Get products by price range
+        return products .collectList() .map(productList -> {
+            if (productList.isEmpty())
+        {
+            return ResponseEntity.notFound().build();
+        } else {
+                return ResponseEntity.ok(productList); } });
+    }
+    // Get products by price range
         @GetMapping("/price-range")
         public Mono<ResponseEntity<List<ProductResponse>>> getProductsByPriceRange(
                 @RequestParam Double minPrice,

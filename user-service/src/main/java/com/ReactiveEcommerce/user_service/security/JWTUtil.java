@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -46,6 +47,10 @@ public class JWTUtil {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
+    public String extractEmail(String token) {
+        String trimmedToken = token.replace("Bearer ", "").trim();
+        return extractClaim(trimmedToken, claims -> claims.get("email", String.class)); }
+
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
@@ -55,14 +60,12 @@ public class JWTUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username) {
-
-        logger.info("\n\nGenerating token for username: " + username);
+    public String generateToken(String username, String email) {
+        logger.info("\n\nGenerating token for username: " + username + " and email: " + email);
         Map<String, Object> claims = new HashMap<>();
+        claims.put("email", email);
         return createToken(claims, username);
-    }
-
-    private String createToken(Map<String, Object> claims, String subject) {
+    }    private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)

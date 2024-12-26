@@ -30,10 +30,9 @@ public class NotificationService {
     }
 
     // Method for user registration notification
-    public void sendUserRegistrationNotification(String to) {
-        String subject = "Welcome to Reactive Ecommerce ";// username + "!";
-        String body = "Dear " + "user" + ",\n\nWelcome to Reactive Ecommerce! We're excited to have you on board." +
-                " Feel free to explore our platform and enjoy shopping.\n\nBest regards,\nReactive Ecommerce Team";
+    public void sendUserLoginNotification(String to) {
+        String subject = "A device has logged in  ";// username + "!";
+        String body = "Dear " + "user" + ",\n\nWelcome to Reactive Ecommerce! You are logged in";
         sendEmail(to, subject, body);
     }
 
