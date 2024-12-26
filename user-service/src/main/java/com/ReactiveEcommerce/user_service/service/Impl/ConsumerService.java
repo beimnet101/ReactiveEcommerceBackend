@@ -1,7 +1,7 @@
 package com.ReactiveEcommerce.user_service.service.Impl;
 
-import com.ReactiveEcommerce.user_service.dto.ProductRequest;
-import com.ReactiveEcommerce.user_service.dto.ProductResponse;
+import com.ReactiveEcommerce.user_service.dto.*;
+import com.ReactiveEcommerce.user_service.model.Order;
 import com.ReactiveEcommerce.user_service.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -82,4 +82,109 @@ public class ConsumerService {
 
 
     }
+    // ------------------- Order Methods -------------------
+
+    // Get all orders
+    public Flux<Order> getAllOrders() {
+        return webClientBuilder.build()
+                .get()
+                .uri("http://OrderService/orders/orders/all")
+                .retrieve()
+                .bodyToFlux(Order.class);
+    }
+
+    // Get an order by ID
+    public Mono<Order> getOrderById(Integer orderId) {
+        return webClientBuilder.build()
+                .get()
+                .uri("http://OrderService/orders/{orderId}", orderId)
+                .retrieve()
+                .bodyToMono(Order.class);
+    }
+    public Flux<OrderResponse> searchOrdersByUserId(Integer userId) {
+        return webClientBuilder.build()
+                .get()  // Sending a GET request to the OrderService search endpoint
+                .uri("http://OrderService/orders/search?userId={userId}", userId)  // Pass the userId as a query parameter
+                .retrieve()
+                .bodyToFlux(OrderResponse.class);  // The response will be a Flux of OrderResponse
+    }
+
+    // Get orders by date range
+    public Flux<OrderResponse> getOrdersByDateRange(String startDate, String endDate) {
+        return webClientBuilder.build()
+                .get()
+                .uri("http://OrderService/orders/date-range?startDate={startDate}&endDate={endDate}", startDate, endDate)
+                .retrieve()
+                .bodyToFlux(OrderResponse.class);
+    }
+
+    // Add a new order
+    public Mono<OrderResponse> addOrder(OrderRequest orderRequest) {
+        return webClientBuilder.build()
+                .post()
+                .uri("http://OrderService/orders/addOrder")
+                .bodyValue(orderRequest)
+                .retrieve()
+                .bodyToMono(OrderResponse.class);
+    }
+
+
+    // Update an order by I
+    public Mono<OrderResponse> updateOrder(Integer orderId, OrderRequest orderRequest) {
+        return webClientBuilder.build()
+                .put()
+                .uri("http://OrderService/orders/{orderId}", orderId)
+                .bodyValue(orderRequest)
+                .retrieve()
+                .bodyToMono(OrderResponse.class);
+    }
+
+    // Delete an order by ID
+    public Mono<Void> deleteOrderById(Integer orderId) {
+        return webClientBuilder.build()
+                .delete()
+                .uri("http://OrderService/orders/{orderId}", orderId)
+                .retrieve()
+                .bodyToMono(Void.class);
+    }
+    // Send order placement notification to NotificationService
+    public void sendOrderPlacementNotification(OrderRequest orderRequest) {
+        EmailRequest emailRequest=new EmailRequest();
+        emailRequest.setEmail(orderRequest.Email);
+        webClientBuilder.build()
+                .post()
+                .uri("http://NotificationService/notifications/send-order-notification")  // URL for NotificationService endpoint
+                .bodyValue(emailRequest)  // Send email in the body
+                .retrieve()
+                .bodyToMono(Void.class)  // No content expected in the response
+                .block();  // Block to make it synchronous
+    }
+
+    // Send registration notification to NotificationService
+    public void sendRegistrationNotification(OrderRequest orderRequest) {
+        String email=orderRequest.getEmail();
+        webClientBuilder.build()
+                .post()
+                .uri("http://NotificationService/notifications/send-registration-notification")  // URL for NotificationService endpoint
+                .bodyValue(email)  // Send email in the body
+                .retrieve()
+                .bodyToMono(Void.class)  // No content expected in the response
+                .block();  // Block to make it synchronous
+    }
+
+    // Send sign-up confirmation notification to NotificationService
+    public void sendSignUpConfirmation(OrderRequest orderRequest) {
+        String email=orderRequest.getEmail();
+        webClientBuilder.build()
+                .post()
+                .uri("http://NotificationService/notifications/send-signup-confirmation")  // URL for NotificationService endpoint
+                .bodyValue(email)  // Send email in the body
+                .retrieve()
+                .bodyToMono(Void.class)  // No content expected in the response
+                .block();  // Block to make it synchronous
+    }
 }
+
+
+
+

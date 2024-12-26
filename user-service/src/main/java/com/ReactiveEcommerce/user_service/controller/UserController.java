@@ -1,7 +1,10 @@
 package com.ReactiveEcommerce.user_service.controller;
 
+import com.ReactiveEcommerce.user_service.dto.OrderRequest;
+import com.ReactiveEcommerce.user_service.dto.OrderResponse;
 import com.ReactiveEcommerce.user_service.dto.ProductRequest;
 import com.ReactiveEcommerce.user_service.dto.ProductResponse;
+import com.ReactiveEcommerce.user_service.model.Order;
 import com.ReactiveEcommerce.user_service.model.Product;
 import com.ReactiveEcommerce.user_service.service.Impl.ConsumerService;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +83,66 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
                 .then(Mono.just(ResponseEntity.noContent().build()))
                 .onErrorResume(e -> Mono.just(ResponseEntity.notFound().build())).then();
     }
-}
+
+        // ------------------- Order Endpoints -------------------
+
+        @GetMapping("/orders")
+        public Flux<Order> getAllOrders() {
+            return consumerService.getAllOrders();
+        }
+
+        @GetMapping("/orders/{orderId}")
+        public Mono<Order> getOrderById(@PathVariable Integer orderId) {
+            return consumerService.getOrderById(orderId);
+        }
+
+
+        @GetMapping("/orders/date-range")
+        public Flux<OrderResponse> getOrdersByDateRange(
+                @RequestParam String startDate,
+                @RequestParam String endDate) {
+            return consumerService.getOrdersByDateRange(startDate, endDate);
+        }
+
+        @PostMapping("/orders/createOrder")
+        public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest) {
+
+                   consumerService.sendOrderPlacementNotification(orderRequest);
+            return consumerService.addOrder(orderRequest);
+
+
+        }
+
+    @GetMapping("/orders/search")
+    public Mono<ResponseEntity<Flux<OrderResponse>>> searchOrdersByUserId(@RequestParam Integer userId) {
+        Flux<OrderResponse> orders = consumerService.searchOrdersByUserId(userId);
+
+        return orders.collectList()
+                .map(orderList -> {
+                    if (orderList.isEmpty()) {
+                        return ResponseEntity.notFound().build();
+                    } else {
+                        return ResponseEntity.ok(Flux.fromIterable(orderList));
+                    }
+                });
+    }
+
+
+
+        @PutMapping("/orders/{orderId}")
+        public Mono<OrderResponse> updateOrder(
+                @PathVariable Integer orderId,
+                @RequestBody OrderRequest orderRequest) {
+            return consumerService.updateOrder(orderId, orderRequest);
+        }
+
+        @DeleteMapping("/orders/{orderId}")
+        public Mono<Void> deleteOrder(@PathVariable Integer orderId) {
+            return consumerService.deleteOrderById(orderId);
+        }
+    }
+
+
 
 
 
