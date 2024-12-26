@@ -6,28 +6,54 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")  // MongoDB equivalent of the @Table annotation
-public class User {
+@Document(collection = "users")
+public class User implements UserDetails {
 
     @Id
-    private String id;  // MongoDB uses String for the ID by default
-
+    private String id;
     private String username;
     private String password;
-
-    private Role role; // Enum field
-
+    private Role role;
+    private String email;
     @CreatedDate
-    private LocalDateTime createdDate;  // Keep this if you want automatic date creation handling by MongoDB
+    private LocalDateTime createdDate;
 
     public enum Role {
         ADMIN,
         USER
+    }
+
+    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())); }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

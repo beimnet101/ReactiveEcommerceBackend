@@ -16,16 +16,16 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
-        <module name="cart-service" />
-        <module name="API-GATEWAY" />
-        <module name="payment-service" />
         <module name="product-service" />
+        <module name="cart-service" />
+        <module name="payment-service" />
         <module name="order-service" />
         <module name="eureka-server" />
         <module name="notification-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="API-GATEWAY" target="21" />
       <module name="api-gateway" target="21" />
     </bytecodeTargetLevel>
   </component>
