@@ -38,16 +38,19 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
     return consumerService.getProductById(productId);
 }
 
-     //Search products by name
-    @GetMapping("product/search")
+
+    @GetMapping("/product/search")
     public Mono<ResponseEntity<List<ProductResponse>>> searchProductsByName(@RequestParam String name) {
         return consumerService.searchProductsByName(name)
                 .collectList()
-                .map(productList -> productList.isEmpty() ?
-                        ResponseEntity.notFound().build() :
-                        ResponseEntity.ok(productList));
+                .map(productList -> {
+                    if (productList.isEmpty()) {
+                        return ResponseEntity.notFound().build();
+                    } else {
+                        return ResponseEntity.ok(productList);
+                    }
+                });
     }
-
 
     // Get products by price range
     @GetMapping("product/price-range")

@@ -42,17 +42,14 @@ public class ConsumerService {
     }
 
      //Search products by name
-     public Flux<ProductResponse> searchProductsByName(String name) {
-        return webClientBuilder.build()
-                .get()
-                .uri(uriBuilder -> uriBuilder .path("http://ProductService/products/search")
-                .queryParam(name)
-                .build())
-                .retrieve()
-                .bodyToFlux(ProductResponse.class);
-     }
 
-
+//
+public Flux<ProductResponse> searchProductsByName(String name) {
+    return webClientBuilder.build()
+            .get()
+            .uri("http://ProductService/products/search?name={name}", name) // Replace with the actual service URL
+            .retrieve()
+            .bodyToFlux(ProductResponse.class);}
 
 
 
