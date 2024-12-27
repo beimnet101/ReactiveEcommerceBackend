@@ -24,16 +24,29 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         throw new UnsupportedOperationException("Save is not supported.");
     }
 
-    @Override
-    public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-            return authenticationManager.authenticate(new JWTAuthenticationToken(token))
-                    .map(SecurityContextImpl::new);
-        }
-        return Mono.empty();
+//    @Override
+//    public Mono<SecurityContext> load(ServerWebExchange exchange) {
+//        String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+//        if (token != null && token.startsWith("Bearer ")) {
+//            token = token.substring(7);
+//            return authenticationManager.authenticate(new JWTAuthenticationToken(token))
+//                    .map(SecurityContextImpl::new);
+//        }
+//        return Mono.empty();
+@Override
+public Mono<SecurityContext> load(ServerWebExchange exchange) {
+    return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst("Authorization"))
+            .filter(authHeader -> authHeader.startsWith("Bearer "))
+            .map(authHeader -> authHeader.substring(7)) // Extract the token
+            .flatMap(token -> {
+                JWTAuthenticationToken authToken = new JWTAuthenticationToken(token);
+                return authenticationManager.authenticate(authToken)
+                        .map(SecurityContextImpl::new);
+            });
+            }
+
+
     }
-}
+
 
 

@@ -20,18 +20,37 @@ public class JWTAuthenticationManager implements ReactiveAuthenticationManager {
         this.userService = userService;
     }
 
-    @Override
-    public Mono<Authentication> authenticate(Authentication authentication) throws AuthenticationException {
-        String token = authentication.getCredentials().toString();
-        String username = jwtUtil.extractUsername(token);
+//    @Override
+//    public Mono<Authentication> authenticate(Authentication authentication) throws AuthenticationException {
+//        String token = authentication.getCredentials().toString();
+//        String username = jwtUtil.extractUsername(token);
+//
+//        return userService.findByUsername(username)
+//                .handle((userDetails, sink) -> {
+//                    if (jwtUtil.validateToken(token, userDetails.getUsername())) {
+//                        sink.next(new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities()));
+//                    } else {
+//                        sink.error(new AuthenticationException("Invalid JWT token") {});
+//                    }
+//                });
+@Override
+public Mono<Authentication> authenticate(Authentication authentication) {
+    String token = authentication.getCredentials().toString();
+    String username = jwtUtil.extractUsername(token);
 
-        return userService.findByUsername(username)
-                .handle((userDetails, sink) -> {
-                    if (jwtUtil.validateToken(token, userDetails.getUsername())) {
-                        sink.next(new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities()));
-                    } else {
-                        sink.error(new AuthenticationException("Invalid JWT token") {});
-                    }
-                });
-    }
+    return userService.findByUsername(username)
+            .switchIfEmpty(Mono.error(new RuntimeException("User not found")))
+            .map(userDetails -> {
+                if (jwtUtil.validateToken(token, userDetails.getUsername())) {
+                    return new UsernamePasswordAuthenticationToken(
+                            userDetails.getUsername(),
+                            token,
+                            userDetails.getAuthorities()
+                    );
+                } else {
+                    throw new RuntimeException("Invalid JWT token");
+                }
+            });
 }
+    }
+

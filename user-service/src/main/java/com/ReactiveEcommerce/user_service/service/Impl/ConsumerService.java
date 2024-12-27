@@ -159,7 +159,7 @@ public Flux<ProductResponse> searchProductsByName(String name) {
                 .bodyToMono(Void.class);
     }
     // Send order placement notification to NotificationService
-    public void sendOrderPlacementNotification( String token) {
+    public void sendOrderPlacementNotification(String token) {
         // Extract email from the JWT token
         String email = jwtUtil.extractEmail(token);
 
@@ -179,17 +179,17 @@ public Flux<ProductResponse> searchProductsByName(String name) {
 
 
     // Send registration notification to NotificationService
-    public void sendLoginNotification(AuthRequest authRequest) {
+    public void sendLoginNotification(String token) {
 
 
         // Create email request and set email
-        EmailRequest email = new EmailRequest();
-        email.setEmail(authRequest.getEmail());
-
+        String email= jwtUtil.extractEmail(token);
+        EmailRequest emailRequest=new EmailRequest();
+        emailRequest.setEmail(email);
         webClientBuilder.build()
                 .post()
                 .uri("http://NotificationService/notifications/send-login-notification")  // URL for NotificationService endpoint
-                .bodyValue(email)  // Send email in the body
+                .bodyValue(emailRequest)  // Send email in the body
                 .retrieve()
                 .bodyToMono(Void.class)  // No content expected in the response
                 .block();  // Block to make it synchronous
