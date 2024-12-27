@@ -41,13 +41,21 @@ public class AuthController {
         return userService.findByUsername(authRequest.getUsername())
                 .<ResponseEntity<AuthResponse>>handle((userDetails, sink) -> {
                     if (userDetails.getPassword().equals(authRequest.getPassword())) {
-                        sink.next(ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(authRequest.getUsername(), authRequest.getEmail()))));
-                        consumerService.sendLoginNotification(authRequest);
+                        // Generate token
+                        String token = jwtUtil.generateToken(authRequest.getUsername(), authRequest.getEmail());
+
+                        // Send the login notification asynchronously
+                        consumerService.sendLoginNotification(token);
+
+
+                        // Return the response with token
+                        sink.next(ResponseEntity.ok(new AuthResponse(token)));
                     } else {
                         sink.error(new BadCredentialsException("Invalid username or password"));
                     }
-                }).switchIfEmpty(Mono.error(new BadCredentialsException("Invalid username or password")));
- }
+                })
+                .switchIfEmpty(Mono.error(new BadCredentialsException("Invalid username or password")));
+    }
 //    @PostMapping("/signup")
 //    public Mono<ResponseEntity<String>> signup(@RequestBody RegisterReq registerReq) {
 //             consumerService.sendSignUpConfirmation(registerReq);

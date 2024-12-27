@@ -6,6 +6,7 @@ import com.ReactiveEcommerce.user_service.dto.ProductRequest;
 import com.ReactiveEcommerce.user_service.dto.ProductResponse;
 import com.ReactiveEcommerce.user_service.model.Order;
 import com.ReactiveEcommerce.user_service.model.Product;
+import com.ReactiveEcommerce.user_service.security.SecurityUtil;
 import com.ReactiveEcommerce.user_service.service.Impl.ConsumerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class UserController {
 
     //private final UserServiceImpl userService;
   private final ConsumerService consumerService;
+  private  final SecurityUtil securityUtil;
 
 
     @GetMapping("/products")
@@ -116,18 +118,34 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
                 @RequestParam String endDate) {
             return consumerService.getOrdersByDateRange(startDate, endDate);
         }
+//    @SecurityRequirement(name = "bearerAuth")
+//    @PreAuthorize("hasRole('USER')")
+//        @PostMapping("/orders/createOrder")
+//        public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest) {
+//        String token= String.valueOf(SecurityUtil.getBearerToken());
+//
+//
+//
+//                   consumerService.sendOrderPlacementNotification(token);
+//            return consumerService.addOrder(orderRequest);
+//
+//
+//        }
+
+
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('USER')")
-        @PostMapping("/orders/createOrder")
-        public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest,@RequestHeader("Authorization") String token) {
-             String actualToken = token;
+    @PostMapping("/orders/createOrder")
+    public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest) {
+        // Use flatMap to work with Mono<String> from getBearerToken
+        return SecurityUtil.getBearerToken()
+                .flatMap(token -> {
+                    // Once you have the token, pass it to the consumerService
+                    consumerService.sendOrderPlacementNotification(token);
+                    return consumerService.addOrder(orderRequest); // Continue with your order creation logic
+                });
+    }
 
-
-                   consumerService.sendOrderPlacementNotification(actualToken);
-            return consumerService.addOrder(orderRequest);
-
-
-        }
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/orders/search")
