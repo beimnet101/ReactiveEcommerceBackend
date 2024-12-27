@@ -10,6 +10,8 @@ import com.ReactiveEcommerce.user_service.security.SecurityUtil;
 import com.ReactiveEcommerce.user_service.service.Impl.ConsumerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class UserController {
     //private final UserServiceImpl userService;
   private final ConsumerService consumerService;
   private  final SecurityUtil securityUtil;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 
     @GetMapping("/products")
@@ -132,19 +136,32 @@ public Mono<Product> getProductById(@PathVariable Integer productId) {
 //
 //        }
 
-
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/orders/createOrder")
     public Mono<OrderResponse> addOrder(@RequestBody OrderRequest orderRequest) {
-        // Use flatMap to work with Mono<String> from getBearerToken
-        return SecurityUtil.getBearerToken()
+        // Log to check if the method is being invoked correctly
+        logger.info("Starting to create order for: {}", orderRequest);
+
+        return SecurityUtil.getBearerToken()  // Get the token reactively
                 .flatMap(token -> {
-                    // Once you have the token, pass it to the consumerService
-                    consumerService.sendOrderPlacementNotification(token);
-                    return consumerService.addOrder(orderRequest); // Continue with your order creation logic
+                    // Log the token to verify it's being retrieved
+                    logger.info("Retrieved token: {}", token);
+
+                    // Send the order placement notification with the token
+                    consumerService.sendOrderPlacementNotification(token);  // Send notification with token
+
+                    // Proceed with order creation logic
+                    return consumerService.addOrder(orderRequest)  // Continue with order creation
+                            .doOnTerminate(() -> logger.info("Order creation completed for user: {}", orderRequest));
+                })
+                .onErrorResume(e -> {
+                    // Log any errors encountered
+                    logger.error("Error occurred during order creation: ", e);
+                    return Mono.error(new RuntimeException("Error processing the order"));
                 });
     }
+
 
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ADMIN')")

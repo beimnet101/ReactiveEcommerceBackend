@@ -159,7 +159,7 @@ public Flux<ProductResponse> searchProductsByName(String name) {
                 .bodyToMono(Void.class);
     }
     // Send order placement notification to NotificationService
-    public void sendOrderPlacementNotification( String token) {
+    public void sendOrderPlacementNotification(String token) {
         // Extract email from the JWT token
         String email = jwtUtil.extractEmail(token);
 
