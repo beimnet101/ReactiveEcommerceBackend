@@ -1,8 +1,6 @@
 package com.ReactiveEcommerce.user_service.controller;
 
-import com.ReactiveEcommerce.user_service.dto.AuthRequest;
-import com.ReactiveEcommerce.user_service.dto.AuthResponse;
-import com.ReactiveEcommerce.user_service.dto.RegisterReq;
+import com.ReactiveEcommerce.user_service.dto.*;
 import com.ReactiveEcommerce.user_service.model.User;
 import com.ReactiveEcommerce.user_service.security.JWTUtil;
 
@@ -43,13 +41,13 @@ public class AuthController {
                     if (userDetails.getPassword().equals(authRequest.getPassword())) {
                         // Generate token
                         String token = jwtUtil.generateToken(authRequest.getUsername(), authRequest.getEmail());
-
+                        String refreshToken = jwtUtil.generateRefreshToken(authRequest.getUsername());
                         // Send the login notification asynchronously
                         consumerService.sendLoginNotification(token);
 
 
                         // Return the response with token
-                        sink.next(ResponseEntity.ok(new AuthResponse(token)));
+                        sink.next(ResponseEntity.ok(new AuthResponse(token, refreshToken)));
                     } else {
                         sink.error(new BadCredentialsException("Invalid username or password"));
                     }
@@ -81,6 +79,11 @@ public class AuthController {
         return Mono.just(ResponseEntity.ok("You have accessed a protected endpoint!"));
     }
 
+    @PostMapping("/refresh-token")
+    public MessageResponseDTO refreshToken(
+            @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
+        return userService.refreshToken(refreshTokenRequest);
+    }
 
     // Endpoint to get a user by ID
     @SecurityRequirement(name = "bearerAuth")

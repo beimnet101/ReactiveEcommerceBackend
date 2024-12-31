@@ -7,8 +7,17 @@ import lombok.Data;
 public class AuthResponse {
 
     private String token;
+    private String refreshToken;
 
-    public AuthResponse(String token) {
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public AuthResponse(String token, String refreshToken) {
         this.token = token;
     }
 
