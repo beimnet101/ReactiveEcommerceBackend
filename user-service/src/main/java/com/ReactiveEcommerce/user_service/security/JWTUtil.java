@@ -2,7 +2,6 @@ package com.ReactiveEcommerce.user_service.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -30,6 +29,10 @@ public class JWTUtil {
     @Value("${spring.security.jwt.expiration}")
     private long expirationTime;
 
+
+    @Value("${spring.security.refresh.expiration}")
+    private long refreshExpiration;
+
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes()); // Use the injected secret key
@@ -52,8 +55,12 @@ public class JWTUtil {
         return extractClaim(trimmedToken, claims -> claims.get("email", String.class)); }
 
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    public Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -65,7 +72,8 @@ public class JWTUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", email);
         return createToken(claims, username);
-    }    private String createToken(Map<String, Object> claims, String subject) {
+    }
+    private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -74,6 +82,19 @@ public class JWTUtil {
                 .signWith(key).compact();
     }
 
+
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createRefreshToken(claims, username);
+    }
+    private String createRefreshToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration)) // Use the injected expiration time
+                .signWith(key).compact();
+    }
     public Boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
